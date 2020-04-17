@@ -1,13 +1,15 @@
-# Build Private Cloud Step by Step from the baremetal to container using Kubevirt and Upstream Kubernetes
+# Build Private Cloud Step by Step from the baremetal to container using Kubevirt and Kubernetes
 
-I used to be curious what it takes to build my own cloud, in this article will move step by step this private cloud, being have enough knowledge in Kubenets, so I decided to give a try for first time.
+I always believe the best way to understand sepcific technology, is to try to build myself, which give me on what will go well, and what will go bad, still building a compelete cloud is significate challenge if it is not technical at laptop or desktop resources.
+
+## If we can start by defining the cloud 
 
 Cloud used be defined in very simple way as follow  XaaS, X as a Service'
 * IaaS Infrastructure as a Sevice
 * PaaS Platform as a Service
 * SaaS Software as a Service
 
-## Ingredient 
+### Ingredient 
 * Few Baremetal machines.
 * Few Networking device.
 * Few Flash Disk.
