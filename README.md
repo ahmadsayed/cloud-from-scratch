@@ -138,7 +138,7 @@ kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml
 kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
 
-6. Storage
+6. Configure Dynamically provision Software Defined Block Storage
 
 For storage we have many options, which requie quiet resources, in our cloud we will pick only block storage, by using Rancher Project Longhorn as it is the easiest to install.
 
@@ -146,9 +146,102 @@ Longhorn can be installed as helm or using kubectl only, following our minimalis
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
+kubectl edit svc longhorn-frontend -n longhorn-system
+```
+change ClusterIP to NodePort and open longhorn front end dashboard 
+
+
+7. Install KubeVirt.
+
+As of now we built a functional Kubernetes Cluster with only opensource technologies, time to give it capabilities to provision a virtual machine
+
+
+Step 1: 
+Install libvirt on the all host machines, in my case one machine
+
+```
+sudo apt install libvirt-clients
+virt-host-validate qemu
+```
+expected response in case running on VM, all PASS in case you are running on your machine directly
+```
+ahmed@mycloud:~$ virt-host-validate qemu
+  QEMU: Checking for hardware virtualization                                 : FAIL (Only emulated CPUs are available, performance will be significantly limited)
+  QEMU: Checking if device /dev/vhost-net exists                             : PASS
+  QEMU: Checking if device /dev/net/tun exists                               : PASS
+  QEMU: Checking for cgroup 'memory' controller support                      : PASS
+  QEMU: Checking for cgroup 'memory' controller mount-point                  : PASS
+  QEMU: Checking for cgroup 'cpu' controller support                         : PASS
+  QEMU: Checking for cgroup 'cpu' controller mount-point                     : PASS
+  QEMU: Checking for cgroup 'cpuacct' controller support                     : PASS
+  QEMU: Checking for cgroup 'cpuacct' controller mount-point                 : PASS
+  QEMU: Checking for cgroup 'cpuset' controller support                      : PASS
+  QEMU: Checking for cgroup 'cpuset' controller mount-point                  : PASS
+  QEMU: Checking for cgroup 'devices' controller support                     : PASS
+  QEMU: Checking for cgroup 'devices' controller mount-point                 : PASS
+  QEMU: Checking for cgroup 'blkio' controller support                       : PASS
+  QEMU: Checking for cgroup 'blkio' controller mount-point                   : PASS
+WARN (Unknown if this platform has IOMMU support)
+```
+Create kubevirt namespace
+
+```
+kubectl create namespace kubevirt
 ```
 
+in case you are using Virtual Machine as Host, you need to apply this configuration 
 
+```
+kubectl create configmap -n kubevirt kubevirt-config \
+    --from-literal debug.useEmulation=true
+```
+
+Installing kubevirt
+
+```
+export VERSION=v0.27.0
+kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/${VERSION}/kubevirt-operator.yaml
+kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/${VERSION}/kubevirt-cr.yaml
+kubectl -n kubevirt wait kv kubevirt --for condition=Available
+```
+
+if last statement  give timeout ignore it use the following command to monitor kubevirt installation
+```
+kubectl get po -n kubevirt
+```
+
+At this stage we have kubevirt ready to serve, detailed installation guide found in here 
+https://kubevirt.io/user-guide/#/installation/installation
+
+### Install virt client tool
+
+To manage our minimalist cloud we need a single command line like ibmcloud in case of IBM, az in case Azure, aws in case of Amazong, in our case our global command is not surprise kubectl
+
+we will use kubectl to create vm , container, setup the network, create the storage.
+
+but additional extention needed 
+
+```
+export VERSION=v0.27.0
+wget https://github.com/kubevirt/kubevirt/releases/download/${VERSION}/virtctl-${VERSION}-linux-x86_64
+```
+install krew kubectl plugin manager
+```
+(
+  set -x; cd "$(mktemp -d)" &&
+  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.{tar.gz,yaml}" &&
+  tar zxvf krew.tar.gz &&
+  KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" &&
+  "$KREW" install --manifest=krew.yaml --archive=krew.tar.gz &&
+  "$KREW" update
+)
+```
+
+finally install virtctl plugin 
+
+```
+kubectl krew install virt
+```
 
 
 
