@@ -1,4 +1,6 @@
-# Build Private Cloud From Scratch with Kubernetes.
+# Build Private Cloud Step by Step from the baremetal to container using Kubevirt and Upstream Kubernetes
+
+I used to be curious what it takes to build my own cloud, in this article will move step by step this private cloud, being have enough knowledge in Kubenets, so I decided to give a try for first time.
 
 Cloud used be defined in very simple way as follow  XaaS, X as a Service'
 * IaaS Infrastructure as a Sevice
@@ -16,10 +18,10 @@ Lot of product the exists as commercial and Opensource to provide this capabilit
 So it is a matter of installing those tool and configuring it right ... !!! 
 Unfortunatly those tools is either commercially very expensive, or come with its own challenge and learning curves and their own definition.
 
-## What is a MVP Cloud Platform should Porvide.
+## What it take to build a modern Private Cloud?
 
 One word the SDX family with the Rise of Cloud native more and more SDX come to play but what is SDX it Software Defined X
-The major components are 
+The most comonly known components are 
 * SDN : Software Defined Networking
 * SDS : Software Defined Storage
 
@@ -45,7 +47,7 @@ Also CSI which give provide a standarized interface for Storage as well as Softw
 In Addition to standard Object, Kubernetes provide a good expandability with the custom resource definition make you able to create your own Resources the concepts extended by later with adopting the Operator Patterns.
 
 ### Kubevirt when Kubernetes meets LibVirt.
-Let us put everything together, CNI, CSI , CRD, which can be used to define and create a compelete Virtual Machine not only Containers, or customized light weight VM, It is full blown VM and can be created, managed by Kubernetes as well as all Networking, Storage, provided by the Kubernetes API.
+Let us put everything together, CNI, CSI , CRD, which can be used to define and create a compelete Virtual Machine not only Containers, or customized light weight VM, It is full VM and can be created, managed by Kubernetes as well as all Networking, Storage, provided by the Kubernetes API.
 
 With that we have a compelete Solution that will provide the following IaaS (Virtual Machine, Storage, Networking), PaaS (Kubernetes Operators)
 
@@ -65,21 +67,24 @@ Machine Specs I used
 4 Cores
 4 GB RAM
 
+![step1](media/step1.gif)
 
 ## Step 2: Mount the Host OS iso, I am using Ubuntu 8.10
 
 In Hyper-V  disable secure boot, in order to be to install Linux
+![step2](media/step2.gif)
 
 ## Step 3: Install the Operating System
 
 Few steps nothing special just follow the default settings all configuration will be done as post installation, the key aspect is to insure that your IP address is taken from your home swith by configuring the maching as host network.
 
 The installer will prompt to restart the machine
+![step2](media/step2.gif)
 
 ## Step 4: Install Docker 
 
 4.A : Open the machine from the console to get the ip as well as ping any public web site to insure there public internet connectivity
-
+![step4-a](media/step4-a.gif)
 4.B : At this step no longer need to access the machine directly, you can just ssh it, I started it in headless mode, do the usual apt update and install docker 
 Or just curl this ready made script
 ```
@@ -89,7 +94,7 @@ to check if installation is successful
 ```
 sudo docker run hello-world
 ```
-
+![step4-b](media/step4-b.gif)
 #Step 5: Install Kubernetes 
 Yes, we will use the kubeadm provided from kubernetes documentation (https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/)
 
@@ -120,6 +125,7 @@ Turning off swap this configuration is not persistent.
 ```
 sudo swapoff -a
 ```
+![step5-a](media/step5-a.gif)
 
 5.B Install Kubernetes 
 
@@ -129,7 +135,9 @@ sudo kubeadm init --pod-network-cidr=192.168.0.0/16
 
 If you notice the node will remain Not Ready because we need to install Calico, Kubernets by default does not have capability to assign IP to the pods for example
 
-5.B Install Deploy Calico
+![step5-b](media/step5-b.gif)
+
+5.c Install Deploy Calico
 
 No more need for sudo :), we already admin now on kubernetes itself.
 ```
@@ -137,7 +145,7 @@ kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml
 ## In my case I have single machine, so I will make master schedulable by removing the master label
 kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
-
+![step5-c](media/step5-c.gif)
 6. Configure Dynamically provision Software Defined Block Storage
 
 For storage we have many options, which requie quiet resources, in our cloud we will pick only block storage, by using Rancher Project Longhorn as it is the easiest to install.
@@ -148,16 +156,18 @@ Longhorn can be installed as helm or using kubectl only, following our minimalis
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
 kubectl edit svc longhorn-frontend -n longhorn-system
 ```
+
+![step6](media/step6.gif)
+
 change ClusterIP to NodePort and open longhorn front end dashboard 
 
 
-7. Install KubeVirt.
+## Install KubeVirt.
 
 As of now we built a functional Kubernetes Cluster with only opensource technologies, time to give it capabilities to provision a virtual machine
 
 
-Step 1: 
-Install libvirt on the all host machines, in my case one machine
+### Step 7: Install libvirt on the all host machines, in my case one machine
 
 ```
 sudo apt install libvirt-clients
@@ -183,6 +193,9 @@ ahmed@mycloud:~$ virt-host-validate qemu
   QEMU: Checking for cgroup 'blkio' controller mount-point                   : PASS
 WARN (Unknown if this platform has IOMMU support)
 ```
+![step7](media/Step7.gif)
+
+
 Create kubevirt namespace
 
 ```
@@ -196,7 +209,7 @@ kubectl create configmap -n kubevirt kubevirt-config \
     --from-literal debug.useEmulation=true
 ```
 
-Installing kubevirt
+### Step8: Installing kubevirt
 
 ```
 export VERSION=v0.27.0
@@ -213,7 +226,9 @@ kubectl get po -n kubevirt
 At this stage we have kubevirt ready to serve, detailed installation guide found in here 
 https://kubevirt.io/user-guide/#/installation/installation
 
-### Install virt client tool
+![Step8](media/Step8.gif)
+
+### Step 9: Install virt client tool
 
 To manage our minimalist cloud we need a single command line like ibmcloud in case of IBM, az in case Azure, aws in case of Amazong, in our case our global command is not surprise kubectl
 
@@ -243,6 +258,8 @@ finally install virtctl plugin
 export PATH="${PATH}:${HOME}/.krew/bin"
 kubectl krew install virt
 ```
+
+![Step9](media/Step9.gif)
 
 ## Creating the first Virtual machine 
 
@@ -296,10 +313,10 @@ To Access the VM try
 ```
 kubectl virt console  testvmi-nocloud
 ```
-
+![Step10](media/Step10.gif)
 ## Networking Time 
 
-### Accessing the Internet
+### Step 11: Accessing the Internet
 
 login the machine via fedora/fedora 
 
@@ -315,6 +332,7 @@ if you recieved it depends on the enviroment, this may  happens in case of you a
 [fedora@testvmi-nocloud ~]$ curl https://www.google.com
 curl: (6) Could not resolve host: www.google.com
 ```
+![Step11](media/Step11.gif)
 
 it means the DNS is not configured properly but how we can fix it ??!!!
 
@@ -359,6 +377,7 @@ replace it with
 ```
         forward . 8.8.8.8
 ```        
+![Step12](media/Step12.gif)
 
 Explanation: 
 In Cloud native world we need Service Discovery, kubernetes used to implement it via DNS using coredns, which as it sounds a dns
@@ -380,7 +399,7 @@ curl https://www.google.com
 ```
 
 
-### VM to Pod Communication
+### Step 13: VM to Pod Communication
 
 
 Access the machine via ssh from another pod 
@@ -401,7 +420,9 @@ kubectl exec -ti sleep-8f795f47d-zj7bx -- sh #Replace it with your Pod name
 ping 192.168.188.34
 ```
 
-Add the VM to service discover a.k.a kubernetes DNS coredns, the sameway we define service to kubenetes we need to modify the VM yaml file as well as create a service
+![Step13](media/Step13.gif)
+
+### Step 14 : Add the VM to service discover a.k.a kubernetes DNS coredns, the sameway we define service to kubenetes we need to modify the VM yaml file as well as create a service
 
 ```
 apiVersion: kubevirt.io/v1alpha3
@@ -441,7 +462,7 @@ spec:
         password: fedora
         chpasswd: { expire: False }
 ```
-
+![Step14](media/Step14.gif)
 Then add  Service
 ```
 apiVersion: v1
@@ -466,11 +487,13 @@ kubectl get po
 kubectl exec -ti sleep-8f795f47d-zj7bx -- sh
 ping vmservices
 ```
+![Step15](media/Step15.gif)
 
 Notice the IP it is the same IP of the VM Machine, We successfully created the DNS for this VM using Kubernetes Service.
 
 ## The Storage 
 
+### Step 16: Empty disk the ephemeral storage.
 How the storage will be handled recall the longhorn storage solution the current specification uses empty dir as second storage
 
 ```
@@ -481,11 +504,12 @@ How the storage will be handled recall the longhorn storage solution the current
 
 So there is 2 Gi Disk Mounted let us explore it via accessing the machine directly
 
+![Step16](media/Step16.gif)
 
 The Previous Demo show creating a disk and add file on it, but this ephemeral device if you delete this VM the disk will be raw again and need to be recreated 
 Instead of using emtpy dir we will longhorn as our persistent volume by modifying the machine specs one more time 
 
-### Using shared storage provided by SDS instead of empty dir container storage.
+### Step 17: Using shared storage provided by SDS instead of empty dir container storage.
 
 First Create Persistence Volume 
 
@@ -546,6 +570,7 @@ spec:
         password: fedora
         chpasswd: { expire: False }
 ```
+![Step17](media/Step17.gif)
 
 Now time to boot the machine check the disk with lsblk 
 
@@ -559,10 +584,17 @@ vdb    252:16   0  7.8G  0 disk
 vdc    252:32   0  366K  0 disk
 ```
 
-If we try to mount it 
+Now create ext4 file system, and mount it 
 
 ```
 sudo mkfs.ext4 /dev/vdb
 sudo mkdir /mnt/disk1
 sudo mount /dev/vdb /mnt/disk1
 ```
+
+![Step18](media/Step18.gif)
+
+## Final words
+
+When Kubevirt introduced it was a reimagintion for the hypervisor, Kubernetes is more than just a container platform, it is very extendable, kubevirt define all resources as yaml so by core it is Infrastructure as Code.
+So Kubernetes may no longer be a platform on top hypervisor, it may be the hypervisor itself alongside the container orchestrator, which levetate to be a compelete cloud orchestration layer.
