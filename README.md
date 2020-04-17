@@ -52,3 +52,104 @@ With that we have a compelete Solution that will provide the following IaaS (Vir
 A single Unified API to manage the enviroments, Additionally the core functionalities Kubernetes itself of managing Containers, which will become more attactive when it managing the networking between containers and VM by the standard Kubernetes configurations.
 
 ## Without Further Ado let's build a Private Cloud 
+
+Ingredients: 
+* 8 GB laptop Windows, Mac or Linux
+* Home Switch any brand
+* Hypervisor layer unless you want to run natively in your machine (I am using Windows Hyper-v)
+
+## Step 1: Create the VM or If you additional machine skip this. 
+
+I am using Hyper-V, and connecting my connection to host network directly
+Machine Specs I used 
+4 Cores
+4 GB RAM
+
+
+## Step 2: Mount the Host OS iso, I am using Ubuntu 8.10
+
+In Hyper-V  disable secure boot, in order to be to install Linux
+
+## Step 3: Install the Operating System
+
+Few steps nothing special just follow the default settings all configuration will be done as post installation, the key aspect is to insure that your IP address is taken from your home swith by configuring the maching as host network.
+
+The installer will prompt to restart the machine
+
+## Step 4: Install Docker 
+
+4.A : Open the machine from the console to get the ip as well as ping any public web site to insure there public internet connectivity
+
+4.B : At this step no longer need to access the machine directly, you can just ssh it, I started it in headless mode, do the usual apt update and install docker 
+Or just curl this ready made script
+```
+curl https://raw.githubusercontent.com/ahmadsayed/useful-tools/master/install-docker-ubuntu-1804.sh |  sh - 
+```
+to check if installation is successful 
+```
+sudo docker run hello-world
+```
+
+#Step 5: Install Kubernetes 
+Yes, we will use the kubeadm provided from kubernetes documentation (https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/)
+
+5.A Install required Tools and Post configure the OS
+
+Letting iptables see bridged traffic
+
+```
+cat <<EOF > /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+```
+Installing kubeadm, kubelet and kubectl
+```
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+```
+
+Turning off swap this configuration is not persistent.
+```
+sudo swapoff -a
+```
+
+5.B Install Kubernetes 
+
+```
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+```
+
+If you notice the node will remain Not Ready because we need to install Calico, Kubernets by default does not have capability to assign IP to the pods for example
+
+5.B Install Deploy Calico
+
+No more need for sudo :), we already admin now on kubernetes itself.
+```
+kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml
+## In my case I have single machine, so I will make master schedulable by removing the master label
+kubectl taint nodes --all node-role.kubernetes.io/master-
+```
+
+6. Storage
+
+For storage we have many options, which requie quiet resources, in our cloud we will pick only block storage, by using Rancher Project Longhorn as it is the easiest to install.
+
+Longhorn can be installed as helm or using kubectl only, following our minimalistic approach we are going to use kubectl only
+
+```
+kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
+```
+
+
+
+
+
+
