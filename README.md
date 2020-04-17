@@ -379,20 +379,190 @@ Try to access Google again
 curl https://www.google.com
 ```
 
+
 ### VM to Pod Communication
 
-Our VM now has Internet access let us install nginx on top of it and try to access it from another pod 
 
-first install nginx on the vm
+Access the machine via ssh from another pod 
 
-```
-kubectl virt console testvmi-nocloud
-```
-and inside the VM 
+Install Pod in order to test the connectivity 
 
 ```
-sudo yum update
-sudo yum install nginx
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/sleep/sleep.yaml
 ```
 
 
+pod can simply access the vm via its cluster IP
+
+```
+kubectl get vmi #get the Cluster IP of the Virtual Machine
+kubectl get po 
+kubectl exec -ti sleep-8f795f47d-zj7bx -- sh #Replace it with your Pod name
+ping 192.168.188.34
+```
+
+Add the VM to service discover a.k.a kubernetes DNS coredns, the sameway we define service to kubenetes we need to modify the VM yaml file as well as create a service
+
+```
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  name: testvmi-nocloud
+  labels:
+    vm: fedora  
+spec:
+  terminationGracePeriodSeconds: 30
+  domain:
+    resources:
+      requests:
+        memory: 1024M
+    devices:
+      disks:
+      - name: containerdisk
+        disk:
+          bus: virtio
+      - name: emptydisk
+        disk:
+          bus: virtio
+      - disk:
+          bus: virtio
+        name: cloudinitdisk
+  volumes:
+  - name: containerdisk
+    containerDisk:
+      image: kubevirt/fedora-cloud-container-disk-demo:latest
+  - name: emptydisk
+    emptyDisk:
+      capacity: "2Gi"
+  - name: cloudinitdisk
+    cloudInitNoCloud:
+      userData: |-
+        #cloud-config
+        password: fedora
+        chpasswd: { expire: False }
+```
+
+Then add  Service
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmservice
+spec:
+  selector:
+    vm: fedora
+  clusterIP: None
+  ports:
+  - name: port-22 # this is just dns entry  no port needed as per documentation 
+    port: 22
+    targetPort: 22
+```
+
+
+Try to run the ping within sleep pod 
+
+```
+kubectl get po 
+kubectl exec -ti sleep-8f795f47d-zj7bx -- sh
+ping vmservices
+```
+
+Notice the IP it is the same IP of the VM Machine, We successfully created the DNS for this VM using Kubernetes Service.
+
+## The Storage 
+
+How the storage will be handled recall the longhorn storage solution the current specification uses empty dir as second storage
+
+```
+  - name: emptydisk
+    emptyDisk:
+      capacity: "2Gi"
+```
+
+So there is 2 Gi Disk Mounted let us explore it via accessing the machine directly
+
+
+The Previous Demo show creating a disk and add file on it, but this ephemeral device if you delete this VM the disk will be raw again and need to be recreated 
+Instead of using emtpy dir we will longhorn as our persistent volume by modifying the machine specs one more time 
+
+### Using shared storage provided by SDS instead of empty dir container storage.
+
+First Create Persistence Volume 
+
+```
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhornpvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+  storageClassName: longhorn
+```
+
+The delete the vm and recreate it with the below configuration 
+
+```
+kubectl delete -f testvm.yaml
+kubectl create -f testvm.yaml
+```
+
+```
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  name: testvmi-nocloud
+spec:
+  terminationGracePeriodSeconds: 30
+  domain:
+    resources:
+      requests:
+        memory: 1024M
+    devices:
+      disks:
+      - name: containerdisk
+        disk:
+          bus: virtio
+      - name: blockdisk
+        disk:
+          bus: virtio
+      - disk:
+          bus: virtio
+        name: cloudinitdisk
+  volumes:
+  - name: containerdisk
+    containerDisk:
+      image: kubevirt/fedora-cloud-container-disk-demo:latest
+  - name: blockdisk
+    persistentVolumeClaim:
+        claimName: longhornpvc
+  - name: cloudinitdisk
+    cloudInitNoCloud:
+      userData: |-
+        #cloud-config
+        password: fedora
+        chpasswd: { expire: False }
+```
+
+Now time to boot the machine check the disk with lsblk 
+
+
+```
+-bash-4.4$ lsblk
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+vda    252:0    0    4G  0 disk
+└─vda1 252:1    0    4G  0 part /
+vdb    252:16   0  7.8G  0 disk
+vdc    252:32   0  366K  0 disk
+```
+
+If we try to mount it 
+
+```
+sudo mkfs.ext4 /dev/vdb
+sudo mkdir /mnt/disk1
+sudo mount /dev/vdb /mnt/disk1
+```
