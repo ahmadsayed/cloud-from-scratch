@@ -240,9 +240,159 @@ install krew kubectl plugin manager
 finally install virtctl plugin 
 
 ```
+export PATH="${PATH}:${HOME}/.krew/bin"
 kubectl krew install virt
 ```
 
+## Creating the first Virtual machine 
 
+Time to create a virtual machine, and we will not get simple OS such busybox, or cirros, we will a real fedora instant 
+
+```
+nano testvm.yaml
+```
+Past the following Contents
+
+```
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  name: testvmi-nocloud
+spec:
+  terminationGracePeriodSeconds: 30
+  domain:
+    resources:
+      requests:
+        memory: 1024M
+    devices:
+      disks:
+      - name: containerdisk
+        disk:
+          bus: virtio
+      - name: emptydisk
+        disk:
+          bus: virtio
+      - disk:
+          bus: virtio
+        name: cloudinitdisk
+  volumes:
+  - name: containerdisk
+    containerDisk:
+      image: kubevirt/fedora-cloud-container-disk-demo:latest
+  - name: emptydisk
+    emptyDisk:
+      capacity: "2Gi"
+  - name: cloudinitdisk
+    cloudInitNoCloud:
+      userData: |-
+        #cloud-config
+        password: fedora
+        chpasswd: { expire: False }
+```        
+
+
+To Access the VM try 
+
+```
+kubectl virt console  testvmi-nocloud
+```
+
+## Networking Time 
+
+### Accessing the Internet
+
+login the machine via fedora/fedora 
+
+try to access internet e.g.
+
+```
+curl https://www.google.com
+```
+
+if you recieved it depends on the enviroment, this may  happens in case of you are using Winodws and Hyper-v, I do not think if you run on baremetal you will face the same issue
+
+```
+[fedora@testvmi-nocloud ~]$ curl https://www.google.com
+curl: (6) Could not resolve host: www.google.com
+```
+
+it means the DNS is not configured properly but how we can fix it ??!!!
+
+Looks no far it is all Kubernetes check your coredns configure
+
+```
+kubectl edit cm  coredns -n kube-system
+```
+
+if you recieved something like that 
+
+```
+  Corefile: |
+    .:53 {
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+
+```
+
+The problem in this line 
+
+```
+        forward . /etc/resolv.conf
+
+```
+replace it with 
+```
+        forward . 8.8.8.8
+```        
+
+Explanation: 
+In Cloud native world we need Service Discovery, kubernetes used to implement it via DNS using coredns, which as it sounds a dns
+the corefile, is configuration which tell kubernetes for none cluster.local fall back to the host dns which is configured in /etc/resolve.conf
+
+For the sake of simplicity we will replace it with the legendary 8.8.8.8
+
+Now Delete the vm and recreate it 
+
+```
+kubectl delete -f testvm.yaml
+kubectl create -f testvm.yaml
+```
+
+Try to access Google again 
+
+```
+curl https://www.google.com
+```
+
+### VM to Pod Communication
+
+Our VM now has Internet access let us install nginx on top of it and try to access it from another pod 
+
+first install nginx on the vm
+
+```
+kubectl virt console testvmi-nocloud
+```
+and inside the VM 
+
+```
+sudo yum update
+sudo yum install nginx
+```
 
 
