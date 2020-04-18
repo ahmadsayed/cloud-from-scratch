@@ -148,7 +148,8 @@ to check if installation is successful
 sudo docker run hello-world
 ```
 ![step4-b](media/step4-b.gif)
-#Step 5: Install Kubernetes 
+
+## Step 5: Install Kubernetes 
 Yes, we will use the kubeadm provided from kubernetes documentation (https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/)
 
 5.A Install required Tools and Post configure the OS
