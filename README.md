@@ -36,7 +36,6 @@ Providing a shared storage pool, is by bringing up All Flash appliance, or spinn
 
 ## Kubernetes is more than just Container Orchestrator 
 
-
 Kubernetes is the most used platform for container orchestration, a closer look at Kubernetes reveal that is is more than Just Container Orchestrator, as It provides the CXI where X is N or S 
 * CNI : Container Network Interface 
 * CSI : Container Storage Interface
@@ -48,12 +47,21 @@ Also CSI which give provide a standarized interface for Storage as well as Softw
 ### Custom Resource Definition
 In Addition to standard Object, Kubernetes provide a good expandability with the custom resource definition make you able to create your own Resources the concepts extended by later with adopting the Operator Patterns.
 
+### Kubernetes architecture and business as usual installation 
+
+Kubernetes to be installed on top Baremetal machine, or Virtual Machine, on top of Hypervisor 
+![kubernetes](https://bitfusion.io/wp-content/uploads/2018/08/kubernetes-2.png)
+
+This is the business as usal situation, is to have Virtual machine directl
+
 ### Kubevirt when Kubernetes meets LibVirt.
 Let us put everything together, CNI, CSI , CRD, which can be used to define and create a compelete Virtual Machine not only Containers, or customized light weight VM, It is full VM and can be created, managed by Kubernetes as well as all Networking, Storage, provided by the Kubernetes API.
 
 With that we have a compelete Solution that will provide the following IaaS (Virtual Machine, Storage, Networking), PaaS (Kubernetes Operators)
 
 A single Unified API to manage the enviroments, Additionally the core functionalities Kubernetes itself of managing Containers, which will become more attactive when it managing the networking between containers and VM by the standard Kubernetes configurations.
+
+![kubevirt](https://www.openshift.com/hs-fs/hubfs/Imported_Blog_Media/KubeVirt-Schema-2019-1024x448.png?width=1024&height=448&name=KubeVirt-Schema-2019-1024x448.png)
 
 ## Without Further Ado let's build a Private Cloud 
 
