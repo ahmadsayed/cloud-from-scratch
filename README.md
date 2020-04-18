@@ -1,7 +1,25 @@
 # Build Private Cloud Step by Step from the baremetal to container using Kubevirt and Kubernetes
 
-I always believe the best way to understand sepcific technology, is to try to build myself, which give me on what will go well, and what will go bad, still building a compelete cloud is significate challenge if it is not technical at laptop or desktop resources.
+I always believe the best way to understand sepcific technology, is to try to build myself, which give me on what will go well, and what will go bad, still building a compelete cloud is significate challenge 
 
+## What we are going to Build 
+
+* A platform to handle both VM, and Containers.
+* Software Defined Networking and Software Defined Storage
+* Provide a single Unified commandline to manage Network, Storage, Virtual Machines, and Containers.
+
+## To raise the challenge even more 
+
+* I am going to build on my 8GB Personal Laptop
+* I do not have any previous knowledge to the common technology such as VMWARE, OpenStack or Apache Stack 
+* Using only my Kubernetes Knowledge.
+* I am going to put in Single Article 
+* Using only Opensource documentation from the Project documentation with Zero Coding.
+* Nothing Pre-installed  will start with Empty VM or Empty Machine
+
+## *Sounds Impossible!!!!!*  will explain in the upcoming section, unless you know Kubevirt you can skip to steps
+
+![Crazy](https://media1.popsugar-assets.com/files/thumbor/xhKTlc7XSiQUTLTX5K4u4NlSvp4/fit-in/1024x1024/filters:format_auto-!!-:strip_icc-!!-/2015/04/14/056/n/3019466/0d3df6c2fc2196f8_anigif_enhanced-24427-1411484428-9/i/Your-mom-knows-more-about-your-own-health-than-you-do.gif)
 ## If we can start by defining the cloud 
 
 Cloud used be defined in very simple way as follow  XaaS, X as a Service'
@@ -85,7 +103,7 @@ Mainly Kubernetes Skills is required
 
 #### Disadvantage 
 Still new technology as opensource
-Commercial support  by Redhat CNV still in ![Tech preview as per the time of writing this article](https://www.redhat.com/en/resources/container-native-virtualization)
+Commercial support  by Redhat CNV still in [Tech preview as per the time of writing this article](https://www.redhat.com/en/resources/container-native-virtualization)
 UI and Dahsboard not available again, Redhat CNV will introduce it.
 
 ## Without Further Ado let's build a Private Cloud based Kuebrnetes
