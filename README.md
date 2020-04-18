@@ -47,12 +47,25 @@ Also CSI which give provide a standarized interface for Storage as well as Softw
 ### Custom Resource Definition
 In Addition to standard Object, Kubernetes provide a good expandability with the custom resource definition make you able to create your own Resources the concepts extended by later with adopting the Operator Patterns.
 
-### Kubernetes architecture and business as usual installation 
+### Building a Private cloud that handle Both Virtual Machines and Containers
 
 Kubernetes to be installed on top Baremetal machine, or Virtual Machine, on top of Hypervisor 
-![kubernetes](https://bitfusion.io/wp-content/uploads/2018/08/kubernetes-2.png)
+![kubernetes](media/asusual.png)
 
-This is the business as usal situation, is to have Virtual machine directl
+#### Advantage of this approach
+
+The products that implement this design is mature as Opensource, or as commercial.
+
+#### Disadvantage 
+
+IT IS COMPLEX !!!!!!!!!!!!
+two different products , differnt types of APIs, different dahsboard
+Different Highly tained skilled engineer.
+Compatibility needs to insure between all different components
+Two types of Control plan, that consume additional resources.
+
+![Painc](https://66.media.tumblr.com/tumblr_lxz9zyjQVV1rn95k2o1_500.gif)
+
 
 ### Kubevirt when Kubernetes meets LibVirt.
 Let us put everything together, CNI, CSI , CRD, which can be used to define and create a compelete Virtual Machine not only Containers, or customized light weight VM, It is full VM and can be created, managed by Kubernetes as well as all Networking, Storage, provided by the Kubernetes API.
@@ -61,9 +74,21 @@ With that we have a compelete Solution that will provide the following IaaS (Vir
 
 A single Unified API to manage the enviroments, Additionally the core functionalities Kubernetes itself of managing Containers, which will become more attactive when it managing the networking between containers and VM by the standard Kubernetes configurations.
 
+Reimagining The Architecure with Kubevirt and Kubernetes only 
+
 ![kubevirt](https://www.openshift.com/hs-fs/hubfs/Imported_Blog_Media/KubeVirt-Schema-2019-1024x448.png?width=1024&height=448&name=KubeVirt-Schema-2019-1024x448.png)
 
-## Without Further Ado let's build a Private Cloud 
+#### Advantage of this approach
+Simpler at least on the digram
+Single control plan
+Mainly Kubernetes Skills is required
+
+#### Disadvantage 
+Still new technology as opensource
+Commercial support  by Redhat CNV still in ![Tech preview as per the time of writing this article](https://www.redhat.com/en/resources/container-native-virtualization)
+UI and Dahsboard not available again, Redhat CNV will introduce it.
+
+## Without Further Ado let's build a Private Cloud based Kuebrnetes
 
 Ingredients: 
 * 8 GB laptop Windows, Mac or Linux
