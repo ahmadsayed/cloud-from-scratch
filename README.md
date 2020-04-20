@@ -211,9 +211,11 @@ kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/depl
 kubectl edit svc longhorn-frontend -n longhorn-system
 ```
 
+change ClusterIP to NodePort and open longhorn front end dashboard 
+
+
 ![step6](media/step6.gif)
 
-change ClusterIP to NodePort and open longhorn front end dashboard 
 
 
 ## Install KubeVirt.
