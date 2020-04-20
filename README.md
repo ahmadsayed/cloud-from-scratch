@@ -658,5 +658,8 @@ sudo mount /dev/vdb /mnt/disk1
 
 ## Final words
 
-When Kubevirt introduced it was a reimagintion for the hypervisor, Kubernetes is more than just a container platform, it is very extendable, kubevirt define all resources as yaml so by core it is Infrastructure as Code.
-So Kubernetes may no longer be a platform on top hypervisor, it may be the hypervisor itself alongside the container orchestrator, which levetate to be a compelete cloud orchestration layer.
+IT Virtualization and Containers, used to be referred and OR relation, should I deploy my workload as VM or as containers, but from Infrastructure this relation always and AND relation, because it still Kubernetes most propably deployed on top of hypervisor and worker nodes is just a virtual machines.
+
+Meanwhile with Kuberntes and Kubevirt, this gap is bridget, by the maturity of Kubevirt, this wil a pradaigm shift, in the design for private cloud enviroments, and automation.
+
+Imagine everything described as kubernetes yaml file and managed by Kubernetes APIs, with its well established ecosystem, and already many skilled Engineer.
