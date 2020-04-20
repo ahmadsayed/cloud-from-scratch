@@ -72,27 +72,29 @@ Kubernetes to be installed on top Baremetal machine, or Virtual Machine, on top 
 
 #### Advantage of this approach
 
-The products that implement this design is mature as Opensource, or as commercial.
+The products that implement this design is mature as Opensource(Openstack, Kubernetes, Cloudfoundry, Mesos, Apache Stack, oVirt, ..) , or as commercial (VMware, Redhat Openstack, Redhat Virtualization, ...).
 
 #### Disadvantage 
 
 IT IS COMPLEX !!!!!!!!!!!!
 two different products , differnt types of APIs, different dahsboard
-Different Highly tained skilled engineer.
+Different Highly trailed and skilled engineer.
 Compatibility needs to insure between all different components
 Two types of Control plan, that consume additional resources.
+Coss network policies between Virtual Machines and Containers, required additional product such as NSX-T, contrail, ... .
 
 ![Painc](https://66.media.tumblr.com/tumblr_lxz9zyjQVV1rn95k2o1_500.gif)
 
 
-### Kubevirt when Kubernetes meets LibVirt.
+## Kubevirt when Kubernetes meets LibVirt.
+
 Let us put everything together, CNI, CSI , CRD, which can be used to define and create a compelete Virtual Machine not only Containers, or customized light weight VM, It is full VM and can be created, managed by Kubernetes as well as all Networking, Storage, provided by the Kubernetes API.
 
 With that we have a compelete Solution that will provide the following IaaS (Virtual Machine, Storage, Networking), PaaS (Kubernetes Operators)
 
 A single Unified API to manage the enviroments, Additionally the core functionalities Kubernetes itself of managing Containers, which will become more attactive when it managing the networking between containers and VM by the standard Kubernetes configurations.
 
-Reimagining The Architecure with Kubevirt and Kubernetes only 
+Reimagining The Architecure with Kubevirt and Kubernetes only,
 
 ![kubevirt](https://www.openshift.com/hs-fs/hubfs/Imported_Blog_Media/KubeVirt-Schema-2019-1024x448.png?width=1024&height=448&name=KubeVirt-Schema-2019-1024x448.png)
 
@@ -100,11 +102,12 @@ Reimagining The Architecure with Kubevirt and Kubernetes only
 Simpler at least on the digram
 Single control plan
 Mainly Kubernetes Skills is required
+Storage and Networking will be handled as Kubernetes resources.
 
 #### Disadvantage 
-Still new technology as opensource
-Commercial support  by Redhat CNV still in [Tech preview as per the time of writing this article](https://www.redhat.com/en/resources/container-native-virtualization)
-UI and Dahsboard not available again, Redhat CNV will introduce it.
+Still new technology as opensource, might lack some Enterprise requirements *this line should be added anyway for any new technology not sure what it means :(* 
+Still Commercial support will be provided by Redhat CNV still in [Tech preview as per the time of writing this article](https://www.redhat.com/en/resources/container-native-virtualization)
+UI and Dahsboard not available, Redhat CNV will introduce it as per of their OpenShift Console.
 
 ## Without Further Ado let's build a Private Cloud based Kuebrnetes
 
@@ -112,6 +115,9 @@ Ingredients:
 * 8 GB laptop Windows, Mac or Linux
 * Home Switch any brand
 * Hypervisor layer unless you want to run natively in your machine (I am using Windows Hyper-v)
+
+Product lists:
+![Products](media/products.png)
 
 ## Step 1: Create the VM or If you additional machine skip this. 
 
