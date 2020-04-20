@@ -132,7 +132,7 @@ In Hyper-V  disable secure boot, in order to be to install Linux
 Few steps nothing special just follow the default settings all configuration will be done as post installation, the key aspect is to insure that your IP address is taken from your home swith by configuring the maching as host network.
 
 The installer will prompt to restart the machine
-![step2](media/step2.gif)
+![step2](media/step3.gif)
 
 ## Step 4: Install Docker 
 
