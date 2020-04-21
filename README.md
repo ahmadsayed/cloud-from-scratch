@@ -1,6 +1,6 @@
 # Build Private Cloud Step by Step from the baremetal to container using Kubevirt and Kubernetes
 
-I always believe the best way to understand sepcific technology, is to try to build myself, which give me on what will go well, and what will go bad, still building a compelete cloud is significate challenge 
+I always believe the best way to understand sepcific technology, is to try to build myself, One of technologies we used in our daily is Cloud,so what it takes to build a Cloud Services provider?
 
 ## What we are going to Build 
 
@@ -271,7 +271,7 @@ kubectl create configmap -n kubevirt kubevirt-config \
     --from-literal debug.useEmulation=true
 ```
 
-### Step8: Installing kubevirt
+### Step 8: Installing kubevirt
 
 ```
 export VERSION=v0.27.0
